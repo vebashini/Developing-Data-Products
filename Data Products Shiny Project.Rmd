@@ -1,0 +1,52 @@
+---
+title: "Developing Data Products Project"
+author: "Vebash Naidoo"
+date: "February 10, 2018"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Movie Data
+The Movie Data was downloaded from a course I did on DataCamp. The shiny app has 2 tabs and was done as an interactive R Markdown document with Shiny components embedded in the R Markdown!
+
+* On tab 1 is an interactive plot where the x-axis, y-axis and colour of data points may be amended by the choices made by the user.
+* On tab 2 is a data table where the genre(s) selected in the Genre text box are displayed on a table. The "muliple = T" in select input allows for the selection to take multiple entries. It's very nifty!
+
+```{r, echo = F, warning= F, message=F}
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(plotly))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(lubridate))
+
+# Import movie data 
+load("./movies.Rdata")
+```
+
+## Glimpse at the data
+
+```{r, echo = F, warning= F, comment=""}
+# View the first 5 rows of movies
+glimpse(movies)
+```
+
+## Genres in the data
+
+The Genres is the main element of the data table on tab 2.
+```{r, echo = F, warning= F, error= F, message=F}
+
+p<- ggplot(movies, aes(x = genre)) + geom_bar() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+(gg <- ggplotly(p))
+
+```
+
+***
+Please run the app at https://vebash.shinyapps.io/Dev_Data_Products_W4/ 
+
+... hope you enjoy!
+
+Thank you for reviewing!
+

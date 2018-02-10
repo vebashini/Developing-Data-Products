@@ -1,0 +1,121 @@
+---
+title: "Movie Data"
+author: "Vebash Naidoo"
+date: "February 10, 2018"
+output: html_document
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This R Markdown document is made interactive using Shiny. 
+The data is from a "Building Apps with Shiny" course I did on DataCamp (thanks DataCamp for the lovely course and credit to them for the data used).
+
+## Movie Data Exploration
+
+### Tab 1: Plot Interaction
+
+Explore the movie data by creating your own scatterplot using the choices provided.
+
+* Choose your x-axis variable from the drop-down
+* Choose your y-axis variable from the drop-down
+* How would you like the points to be coloured? By "Genre", "Film Type", or the "Motion Picture Association Rating" ... make your choice by selecting from the drop-down "Colour the points by".
+
+### Tab 2: Data Table
+On the second tab is a table which is driven by choices made in the "Select Genre" tab. The nifty thing here is you get to choose mutiple "Genres" to add in the text box and the data table will add all movies in the Genres chosen to the table.
+
+*To clear the default genre entered just delete the text in the "Select Genre" text box*
+
+
+```{r load, echo = F, message=F, warning=F}
+library(shiny)
+library(ggplot2)
+library(dplyr)
+library(DT)
+
+load("./movies.Rdata")
+
+all_genres <- sort(unique(movies$genre))
+
+```
+
+```{r movies, echo=FALSE}
+sidebarLayout(
+      # Input(s)
+      sidebarPanel(
+            # Drop down item - Select variable for x-axis
+            selectInput(inputId = "x", 
+                        label = "X-axis variable",
+                        choices = c("IMDB rating"="imdb_rating", 
+                                    "IMDB number of votes"="imdb_num_votes", 
+                                    "Critics score"="critics_score", 
+                                    "Audience score"="audience_score"), 
+                        selected = "imdb_num_votes"), 
+            
+            # Drop down item - Select variable for y-axis
+            selectInput(inputId = "y", 
+                        label = "Y-axis variable",
+                        # choices for user
+                        choices = c("IMDB rating"="imdb_rating", 
+                                    "IMDB number of votes"="imdb_num_votes", 
+                                    "Critics score"="critics_score", 
+                                    "Audience score"="audience_score"), 
+                        # default selection
+                        selected = "imdb_rating"),
+
+            
+            # Drop down item - Select variable for colour
+            selectInput(inputId = "z", 
+                        label = "Colour the points by",
+                        choices = c("Film type" = "title_type", 
+                                    "Genre" = "genre", 
+                                    "Motion Picture Association of America Rating" = "mpaa_rating"),
+                        selected = "genre"),
+            
+            # br() element to introduce extra vertical spacing ----
+            br(),
+            br(),
+            br(),
+            br(),
+
+            
+            ## Select Genre for data table info
+            selectInput(inputId = "genre",
+                        label = "Select Genre for the Table",
+                        choices = all_genres,
+                        selected = "Drama",
+                        multiple = T)
+      ),
+      
+
+      # Output(s)
+      mainPanel(
+            # Output: Tabset w/ plot, and table 
+            tabsetPanel(type = "tabs",
+                        tabPanel("Plot", plotOutput(outputId = "scatterplot")),
+                        tabPanel("Table", DT::dataTableOutput(outputId = "moviegenres"))
+            )
+      )
+)
+
+# Create data table
+output$moviegenres <- DT::renderDataTable({
+      req(input$genre)
+      selected_genres <- movies %>%
+            filter(genre %in% input$genre) %>%
+            select(title:mpaa_rating,imdb_rating)
+      DT::datatable(data = selected_genres,
+                    options = list(pageLength = 10),
+                    rownames = FALSE)
+})
+
+# Create scatterplot object the plotOutput function is expecting
+output$scatterplot <- renderPlot({
+      ggplot(data = movies, aes_string(x = input$x, y = input$y, colour = input$z)) +
+            geom_point()
+})
+
+```
+
